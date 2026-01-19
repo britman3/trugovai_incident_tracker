@@ -1,0 +1,253 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum Severity {
+  Critical
+  High
+  Medium
+  Low
+}
+
+enum IncidentCategory {
+  DataLeakage
+  ComplianceViolation
+  SecurityIncident
+  BiasDicrimination
+  Misinformation
+  OperationalFailure
+  PolicyViolation
+  VendorIssue
+}
+
+enum IncidentStatus {
+  Open
+  InProgress
+  Escalated
+  Resolved
+  Reopened
+  Closed
+}
+
+enum BusinessImpact {
+  None
+  Minor
+  Moderate
+  Major
+  Severe
+}
+
+enum ActivityAction {
+  Created
+  Updated
+  StatusChanged
+  Assigned
+  Escalated
+  CommentAdded
+  AttachmentAdded
+  Resolved
+  Closed
+  Reopened
+}
+
+enum DataType {
+  CustomerData
+  FinancialData
+  EmployeeData
+  InternalCode
+  PublicData
+  Other
+}
+
+enum Department {
+  Marketing
+  HR
+  IT
+  Finance
+  Operations
+  Legal
+  Other
+}
+
+enum PIRStatus {
+  Draft
+  InReview
+  Approved
+}
+
+enum ActionItemStatus {
+  Pending
+  InProgress
+  Completed
+  Overdue
+}
+
+// Models
+model Organisation {
+  id        String     @id @default(uuid())
+  name      String
+  incidents Incident[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Incident {
+  id              String           @id @default(uuid())
+  incidentNumber  String           @unique
+  organisationId  String
+  organisation    Organisation     @relation(fields: [organisationId], references: [id])
+
+  // Classification
+  severity        Severity
+  category        IncidentCategory
+  status          IncidentStatus   @default(Open)
+
+  // Description
+  title           String
+  description     String
+  affectedTool    String
+  affectedToolId  String?
+  affectedDepartments Department[]
+  dataTypesInvolved   DataType[]
+
+  // People
+  reportedBy      String
+  reportedByEmail String
+  assignedTo      String?
+  assignedToEmail String?
+  escalatedTo     String?
+
+  // Timeline
+  reportedAt      DateTime         @default(now())
+  acknowledgedAt  DateTime?
+  resolvedAt      DateTime?
+  closedAt        DateTime?
+
+  // Response
+  rootCause           String?
+  immediateActions    String?
+  resolution          String?
+  preventiveMeasures  String?
+
+  // Impact Assessment
+  businessImpact              BusinessImpact?
+  dataSubjectsAffected        Int?
+  financialImpact             Float?
+  regulatoryNotificationRequired Boolean?
+  regulatoryNotificationDate  DateTime?
+
+  // Metadata
+  tags            String[]
+
+  // Relations
+  attachments     Attachment[]
+  activityLog     ActivityLogEntry[]
+  relatedIncidents IncidentRelation[] @relation("IncidentFrom")
+  relatedTo        IncidentRelation[] @relation("IncidentTo")
+  pir             PostIncidentReview?
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([organisationId])
+  @@index([status])
+  @@index([severity])
+  @@index([category])
+  @@index([reportedAt])
+}
+
+model IncidentRelation {
+  id          String   @id @default(uuid())
+  fromId      String
+  toId        String
+  from        Incident @relation("IncidentFrom", fields: [fromId], references: [id], onDelete: Cascade)
+  to          Incident @relation("IncidentTo", fields: [toId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([fromId, toId])
+}
+
+model ActivityLogEntry {
+  id            String         @id @default(uuid())
+  incidentId    String
+  incident      Incident       @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  timestamp     DateTime       @default(now())
+  action        ActivityAction
+  performedBy   String
+  details       String
+  previousValue String?
+  newValue      String?
+
+  @@index([incidentId])
+  @@index([timestamp])
+}
+
+model Attachment {
+  id          String   @id @default(uuid())
+  incidentId  String
+  incident    Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  filename    String
+  url         String
+  uploadedBy  String
+  uploadedAt  DateTime @default(now())
+  size        Int
+
+  @@index([incidentId])
+}
+
+model PostIncidentReview {
+  id            String    @id @default(uuid())
+  incidentId    String    @unique
+  incident      Incident  @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  conductedBy   String
+  conductedAt   DateTime  @default(now())
+
+  // Analysis
+  whatHappened      String
+  whyItHappened     String
+  whatWentWell      String
+  whatCouldImprove  String
+
+  // Lessons Learned
+  lessonsLearned       String
+  policyChangesNeeded  Boolean @default(false)
+  trainingNeeded       Boolean @default(false)
+
+  status        PIRStatus @default(Draft)
+
+  // Relations
+  actionItems   PIRActionItem[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model PIRActionItem {
+  id          String           @id @default(uuid())
+  pirId       String
+  pir         PostIncidentReview @relation(fields: [pirId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  assignedTo  String
+  dueDate     DateTime
+  status      ActionItemStatus @default(Pending)
+  completedAt DateTime?
+
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([pirId])
+  @@index([status])
+}
+
+model IncidentCounter {
+  id    String @id @default(uuid())
+  year  Int    @unique
+  count Int    @default(0)
+}
