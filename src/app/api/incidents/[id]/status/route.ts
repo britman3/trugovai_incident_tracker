@@ -101,7 +101,8 @@ export async function PATCH(
     })
 
     // Create activity log entry
-    let action = 'StatusChanged'
+    type ActivityActionType = 'StatusChanged' | 'Resolved' | 'Closed' | 'Reopened'
+    let action: ActivityActionType = 'StatusChanged'
     if (status === 'Resolved') action = 'Resolved'
     if (status === 'Closed') action = 'Closed'
     if (status === 'Reopened') action = 'Reopened'
@@ -109,7 +110,7 @@ export async function PATCH(
     await prisma.activityLogEntry.create({
       data: {
         incidentId: id,
-        action,
+        action: action,
         performedBy: updatedBy || 'System',
         details: `Status changed from ${incident.status} to ${status}`,
         previousValue: incident.status,
