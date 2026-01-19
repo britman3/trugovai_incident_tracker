@@ -48,7 +48,7 @@ export async function POST(
       where: { id },
       data: {
         status: 'Escalated',
-        escalatedTo,
+        escalatedTo: escalateTo,
         updatedAt: new Date(),
       },
       include: {
