@@ -43,12 +43,19 @@ export function TableRow({
 export function TableHead({
   children,
   className,
+  onClick,
 }: {
   children: React.ReactNode
   className?: string
+  onClick?: () => void
 }) {
   return (
-    <th className={cn('table-cell text-left', className)}>{children}</th>
+    <th
+      className={cn('table-cell text-left', onClick && 'cursor-pointer', className)}
+      onClick={onClick}
+    >
+      {children}
+    </th>
   )
 }
 

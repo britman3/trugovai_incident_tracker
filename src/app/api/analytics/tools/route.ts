@@ -1,6 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+type ToolGroup = {
+  affectedTool: string
+  _count: { id: number }
+}
+
+type ToolIncident = {
+  severity: string
+  category: string
+  reportedAt: Date
+}
+
+type ToolTrendIncident = {
+  affectedTool: string
+  reportedAt: Date
+}
+
 // GET /api/analytics/tools - Incidents by tool analysis
 export async function GET(request: NextRequest) {
   try {
@@ -32,7 +48,7 @@ export async function GET(request: NextRequest) {
 
     // Get details for each tool
     const toolDetails = await Promise.all(
-      toolIncidents.map(async (tool) => {
+      toolIncidents.map(async (tool: ToolGroup) => {
         const incidents = await prisma.incident.findMany({
           where: {
             ...where,
@@ -54,13 +70,13 @@ export async function GET(request: NextRequest) {
 
         const categoryBreakdown: Record<string, number> = {}
 
-        incidents.forEach((incident) => {
+        incidents.forEach((incident: ToolIncident) => {
           severityBreakdown[incident.severity]++
           categoryBreakdown[incident.category] = (categoryBreakdown[incident.category] || 0) + 1
         })
 
         const lastIncident = incidents.length > 0
-          ? incidents.reduce((latest, current) =>
+          ? incidents.reduce((latest: ToolIncident, current: ToolIncident) =>
               new Date(current.reportedAt) > new Date(latest.reportedAt) ? current : latest
             ).reportedAt
           : null
@@ -78,7 +94,7 @@ export async function GET(request: NextRequest) {
     )
 
     // Tool trends (incidents per month per tool for top 5 tools)
-    const topTools = toolIncidents.slice(0, 5).map((t) => t.affectedTool)
+    const topTools = toolIncidents.slice(0, 5).map((t: ToolGroup) => t.affectedTool)
 
     const toolTrendsIncidents = await prisma.incident.findMany({
       where: {
@@ -92,11 +108,11 @@ export async function GET(request: NextRequest) {
     })
 
     const toolTrends: Record<string, Record<string, number>> = {}
-    topTools.forEach((tool) => {
+    topTools.forEach((tool: string) => {
       toolTrends[tool] = {}
     })
 
-    toolTrendsIncidents.forEach((incident) => {
+    toolTrendsIncidents.forEach((incident: ToolTrendIncident) => {
       const date = new Date(incident.reportedAt)
       const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
 
@@ -108,15 +124,15 @@ export async function GET(request: NextRequest) {
 
     // Get all unique months and sort
     const allMonths = new Set<string>()
-    Object.values(toolTrends).forEach((data) => {
-      Object.keys(data).forEach((month) => allMonths.add(month))
+    Object.values(toolTrends).forEach((data: Record<string, number>) => {
+      Object.keys(data).forEach((month: string) => allMonths.add(month))
     })
 
     const sortedMonths = Array.from(allMonths).sort()
 
-    const toolTrendsData = sortedMonths.map((month) => {
+    const toolTrendsData = sortedMonths.map((month: string) => {
       const dataPoint: Record<string, string | number> = { month }
-      topTools.forEach((tool) => {
+      topTools.forEach((tool: string) => {
         dataPoint[tool] = toolTrends[tool][month] || 0
       })
       return dataPoint

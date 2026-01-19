@@ -1,6 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+type ActionItem = {
+  id: string
+  pirId: string
+  title: string
+  description: string | null
+  assignedTo: string
+  dueDate: Date
+  status: string
+  completedAt: Date | null
+  createdAt: Date
+  updatedAt: Date
+}
+
 // GET /api/pir/:id/action-items - Get action items for PIR
 export async function GET(
   request: NextRequest,
@@ -27,7 +40,7 @@ export async function GET(
 
     // Update overdue status
     const now = new Date()
-    const updatedItems = actionItems.map((item) => {
+    const updatedItems = actionItems.map((item: ActionItem) => {
       if (
         item.status !== 'Completed' &&
         new Date(item.dueDate) < now

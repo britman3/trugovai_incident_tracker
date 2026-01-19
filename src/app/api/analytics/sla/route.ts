@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+type SLAIncident = {
+  severity: string
+  category: string
+  affectedTool: string
+  reportedAt: Date
+  acknowledgedAt: Date | null
+  resolvedAt: Date | null
+  status: string
+}
+
 const SLA_CONFIG: Record<string, { responseTime: number; resolutionTarget: number }> = {
   Critical: { responseTime: 1, resolutionTarget: 24 },
   High: { responseTime: 4, resolutionTarget: 48 },
@@ -55,7 +65,7 @@ export async function GET(request: NextRequest) {
     const breachesByCategory: Record<string, number> = {}
     const breachesByTool: Record<string, number> = {}
 
-    incidents.forEach((incident) => {
+    incidents.forEach((incident: SLAIncident) => {
       const config = SLA_CONFIG[incident.severity]
 
       if (incident.resolvedAt) {
@@ -85,10 +95,10 @@ export async function GET(request: NextRequest) {
     })
 
     // Calculate SLA compliance rate over time
-    const resolvedIncidents = incidents.filter((i) => i.resolvedAt)
+    const resolvedIncidents = incidents.filter((i: SLAIncident) => i.resolvedAt)
     const monthlyCompliance: Record<string, { total: number; withinSLA: number }> = {}
 
-    resolvedIncidents.forEach((incident) => {
+    resolvedIncidents.forEach((incident: SLAIncident) => {
       const date = new Date(incident.reportedAt)
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
       const config = SLA_CONFIG[incident.severity]
@@ -115,7 +125,7 @@ export async function GET(request: NextRequest) {
 
     // SLA compliance by severity
     const complianceBySeverity = Object.entries(breachesBySeverity).map(([severity, breaches]) => {
-      const severityIncidents = resolvedIncidents.filter((i) => i.severity === severity)
+      const severityIncidents = resolvedIncidents.filter((i: SLAIncident) => i.severity === severity)
       const total = severityIncidents.length
       return {
         severity,

@@ -1,6 +1,31 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+type StatusGroup = {
+  status: string
+  _count: { id: number }
+}
+
+type SeverityGroup = {
+  severity: string
+  _count: { id: number }
+}
+
+type ToolGroup = {
+  affectedTool: string
+  _count: { id: number }
+}
+
+type IncidentDate = {
+  reportedAt: Date
+}
+
+type ResolvedIncidentSLA = {
+  severity: string
+  reportedAt: Date
+  resolvedAt: Date | null
+}
+
 const STATUS_COLORS: Record<string, string> = {
   Open: '#FF6B6B',
   InProgress: '#F59E0B',
@@ -26,7 +51,7 @@ export async function GET() {
       _count: { id: true },
     })
 
-    const statusData = statusDistribution.map((item) => ({
+    const statusData = statusDistribution.map((item: StatusGroup) => ({
       name: item.status === 'InProgress' ? 'In Progress' : item.status,
       value: item._count.id,
       color: STATUS_COLORS[item.status] || '#6B7280',
@@ -38,8 +63,8 @@ export async function GET() {
       _count: { id: true },
     })
 
-    const severityData = ['Critical', 'High', 'Medium', 'Low'].map((severity) => {
-      const found = severityDistribution.find((s) => s.severity === severity)
+    const severityData = ['Critical', 'High', 'Medium', 'Low'].map((severity: string) => {
+      const found = severityDistribution.find((s: SeverityGroup) => s.severity === severity)
       return {
         severity,
         count: found?._count.id || 0,
@@ -71,7 +96,7 @@ export async function GET() {
       monthlyData[key] = 0
     }
 
-    incidents.forEach((incident) => {
+    incidents.forEach((incident: IncidentDate) => {
       const date = new Date(incident.reportedAt)
       const key = date.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })
       if (monthlyData[key] !== undefined) {
@@ -95,7 +120,7 @@ export async function GET() {
     })
 
     const toolsWithLastIncident = await Promise.all(
-      toolIncidents.map(async (tool) => {
+      toolIncidents.map(async (tool: ToolGroup) => {
         const lastIncident = await prisma.incident.findFirst({
           where: { affectedTool: tool.affectedTool },
           orderBy: { reportedAt: 'desc' },
@@ -144,7 +169,7 @@ export async function GET() {
     }
 
     let withinSLA = 0
-    resolvedIncidents.forEach((incident) => {
+    resolvedIncidents.forEach((incident: ResolvedIncidentSLA) => {
       const target = slaConfig[incident.severity]
       const hoursToResolve =
         (new Date(incident.resolvedAt!).getTime() - new Date(incident.reportedAt).getTime()) /

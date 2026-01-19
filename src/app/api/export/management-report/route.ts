@@ -1,6 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+type ResolvedIncident = {
+  severity: string
+  reportedAt: Date
+  resolvedAt: Date | null
+}
+
+type IncidentDate = {
+  reportedAt: Date
+}
+
+type StatusGroup = {
+  status: string
+  _count: { id: number }
+}
+
+type SeverityGroup = {
+  severity: string
+  _count: { id: number }
+}
+
+type CategoryGroup = {
+  category: string
+  _count: { id: number }
+}
+
+type ToolGroup = {
+  affectedTool: string
+  _count: { id: number }
+}
+
 // GET /api/export/management-report - Generate management report data
 export async function GET(request: NextRequest) {
   try {
@@ -69,7 +99,7 @@ export async function GET(request: NextRequest) {
     let withinSLA = 0
     let totalMTTR = 0
 
-    resolvedIncidents.forEach((incident) => {
+    resolvedIncidents.forEach((incident: ResolvedIncident) => {
       const hoursToResolve =
         (new Date(incident.resolvedAt!).getTime() - new Date(incident.reportedAt).getTime()) /
         (1000 * 60 * 60)
@@ -130,7 +160,7 @@ export async function GET(request: NextRequest) {
     })
 
     const monthlyTrends: Record<string, number> = {}
-    incidents.forEach((incident) => {
+    incidents.forEach((incident: IncidentDate) => {
       const date = new Date(incident.reportedAt)
       const key = date.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })
       monthlyTrends[key] = (monthlyTrends[key] || 0) + 1
@@ -147,20 +177,20 @@ export async function GET(request: NextRequest) {
         slaComplianceRate,
         meanTimeToResolve: mttr,
       },
-      statusBreakdown: statusBreakdown.map((s) => ({
+      statusBreakdown: statusBreakdown.map((s: StatusGroup) => ({
         status: s.status,
         count: s._count.id,
       })),
-      severityBreakdown: severityBreakdown.map((s) => ({
+      severityBreakdown: severityBreakdown.map((s: SeverityGroup) => ({
         severity: s.severity,
         count: s._count.id,
       })),
-      categoryBreakdown: categoryBreakdown.map((c) => ({
+      categoryBreakdown: categoryBreakdown.map((c: CategoryGroup) => ({
         category: c.category,
         count: c._count.id,
       })),
       topIncidents,
-      mostAffectedTools: toolIncidents.map((t) => ({
+      mostAffectedTools: toolIncidents.map((t: ToolGroup) => ({
         tool: t.affectedTool,
         count: t._count.id,
       })),

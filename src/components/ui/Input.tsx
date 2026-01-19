@@ -76,11 +76,12 @@ Textarea.displayName = 'Textarea'
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string
   error?: string
+  placeholder?: string
   options: { value: string | number; label: string; description?: string }[]
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ label, error, options, className, ...props }, ref) => {
+  ({ label, error, placeholder = 'Select...', options, className, ...props }, ref) => {
     return (
       <div className="w-full">
         {label && (
@@ -98,7 +99,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           )}
           {...props}
         >
-          <option value="">Select...</option>
+          <option value="">{placeholder}</option>
           {options.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}

@@ -1,6 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+type ExportIncident = {
+  incidentNumber: string
+  title: string
+  description: string
+  severity: string
+  category: string
+  status: string
+  affectedTool: string
+  affectedDepartments: string[]
+  dataTypesInvolved: string[]
+  reportedBy: string
+  reportedByEmail: string
+  assignedTo: string | null
+  assignedToEmail: string | null
+  escalatedTo: string | null
+  reportedAt: Date
+  acknowledgedAt: Date | null
+  resolvedAt: Date | null
+  closedAt: Date | null
+  rootCause: string | null
+  immediateActions: string | null
+  resolution: string | null
+  preventiveMeasures: string | null
+  businessImpact: string | null
+  dataSubjectsAffected: number | null
+  financialImpact: number | null
+  regulatoryNotificationRequired: boolean
+  regulatoryNotificationDate: Date | null
+  tags: string[]
+}
+
 // GET /api/export/incidents - Export incidents as CSV
 export async function GET(request: NextRequest) {
   try {
@@ -81,7 +112,7 @@ export async function GET(request: NextRequest) {
       return str
     }
 
-    const rows = incidents.map((incident) => [
+    const rows = incidents.map((incident: ExportIncident) => [
       incident.incidentNumber,
       incident.title,
       incident.description,
@@ -114,7 +145,7 @@ export async function GET(request: NextRequest) {
 
     const csv = [
       headers.join(','),
-      ...rows.map((row) => row.map(escapeCSV).join(',')),
+      ...rows.map((row: (string | number | boolean | null | undefined)[]) => row.map(escapeCSV).join(',')),
     ].join('\n')
 
     return new NextResponse(csv, {

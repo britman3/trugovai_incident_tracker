@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+type IncidentRootCause = {
+  rootCause: string | null
+  category: string
+  severity: string
+}
+
 // GET /api/analytics/root-causes - Root cause analysis
 export async function GET(request: NextRequest) {
   try {
@@ -47,15 +53,15 @@ export async function GET(request: NextRequest) {
 
     const wordFrequency: Record<string, number> = {}
 
-    incidents.forEach((incident) => {
+    incidents.forEach((incident: IncidentRootCause) => {
       if (incident.rootCause) {
         const words = incident.rootCause
           .toLowerCase()
           .replace(/[^a-zA-Z\s]/g, '')
           .split(/\s+/)
-          .filter((word) => word.length > 2 && !stopWords.has(word))
+          .filter((word: string) => word.length > 2 && !stopWords.has(word))
 
-        words.forEach((word) => {
+        words.forEach((word: string) => {
           wordFrequency[word] = (wordFrequency[word] || 0) + 1
         })
       }
@@ -77,12 +83,12 @@ export async function GET(request: NextRequest) {
       'Access Control': { count: 0, keywords: ['access', 'permission', 'authorisation', 'credential'] },
     }
 
-    incidents.forEach((incident) => {
+    incidents.forEach((incident: IncidentRootCause) => {
       if (incident.rootCause) {
         const rootCauseLower = incident.rootCause.toLowerCase()
 
         Object.entries(themes).forEach(([theme, data]) => {
-          if (data.keywords.some((keyword) => rootCauseLower.includes(keyword))) {
+          if (data.keywords.some((keyword: string) => rootCauseLower.includes(keyword))) {
             themes[theme].count++
           }
         })
@@ -97,7 +103,7 @@ export async function GET(request: NextRequest) {
     // Root causes by category
     const rootCausesByCategory: Record<string, string[]> = {}
 
-    incidents.forEach((incident) => {
+    incidents.forEach((incident: IncidentRootCause) => {
       if (incident.rootCause) {
         if (!rootCausesByCategory[incident.category]) {
           rootCausesByCategory[incident.category] = []

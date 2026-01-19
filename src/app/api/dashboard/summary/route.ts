@@ -1,6 +1,16 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+type ResolvedIncident = {
+  reportedAt: Date
+  resolvedAt: Date | null
+}
+
+type SeverityGroupItem = {
+  severity: string
+  _count: { id: number }
+}
+
 // GET /api/dashboard/summary - Get dashboard summary stats
 export async function GET() {
   try {
@@ -75,7 +85,7 @@ export async function GET() {
 
     let mttr = 0
     if (resolvedIncidents.length > 0) {
-      const totalHours = resolvedIncidents.reduce((sum, incident) => {
+      const totalHours = resolvedIncidents.reduce((sum: number, incident: ResolvedIncident) => {
         const reported = new Date(incident.reportedAt)
         const resolved = new Date(incident.resolvedAt!)
         return sum + (resolved.getTime() - reported.getTime()) / (1000 * 60 * 60)
@@ -127,11 +137,11 @@ export async function GET() {
 
     let mttrTrend: 'up' | 'down' | 'stable' = 'stable'
     if (recentResolvedIncidents.length > 0 && previousResolvedIncidents.length > 0) {
-      const recentMttr = recentResolvedIncidents.reduce((sum, i) => {
+      const recentMttr = recentResolvedIncidents.reduce((sum: number, i: ResolvedIncident) => {
         return sum + (new Date(i.resolvedAt!).getTime() - new Date(i.reportedAt).getTime())
       }, 0) / recentResolvedIncidents.length
 
-      const previousMttr = previousResolvedIncidents.reduce((sum, i) => {
+      const previousMttr = previousResolvedIncidents.reduce((sum: number, i: ResolvedIncident) => {
         return sum + (new Date(i.resolvedAt!).getTime() - new Date(i.reportedAt).getTime())
       }, 0) / previousResolvedIncidents.length
 
@@ -144,7 +154,7 @@ export async function GET() {
 
     return NextResponse.json({
       openIncidents,
-      openBySeverity: openBySeverity.reduce((acc, item) => {
+      openBySeverity: openBySeverity.reduce((acc: Record<string, number>, item: SeverityGroupItem) => {
         acc[item.severity] = item._count.id
         return acc
       }, {} as Record<string, number>),

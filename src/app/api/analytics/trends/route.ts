@@ -1,6 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+type TrendIncident = {
+  reportedAt: Date
+  category: string
+  severity: string
+}
+
+type ResolvedIncident = {
+  reportedAt: Date
+  resolvedAt: Date | null
+}
+
+type CategoryGroup = {
+  category: string
+  _count: { id: number }
+}
+
+type SeverityGroup = {
+  severity: string
+  _count: { id: number }
+}
+
 // GET /api/analytics/trends - Incident trends over time
 export async function GET(request: NextRequest) {
   try {
@@ -44,7 +65,7 @@ export async function GET(request: NextRequest) {
     // Group by month
     const monthlyData: Record<string, { total: number; byCategory: Record<string, number> }> = {}
 
-    incidents.forEach((incident) => {
+    incidents.forEach((incident: TrendIncident) => {
       const date = new Date(incident.reportedAt)
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
 
@@ -97,7 +118,7 @@ export async function GET(request: NextRequest) {
 
     const mttrByMonth: Record<string, { total: number; count: number }> = {}
 
-    resolvedIncidents.forEach((incident) => {
+    resolvedIncidents.forEach((incident: ResolvedIncident) => {
       const date = new Date(incident.reportedAt)
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
       const hours =
@@ -121,11 +142,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       trends,
-      categoryBreakdown: categoryBreakdown.map((c) => ({
+      categoryBreakdown: categoryBreakdown.map((c: CategoryGroup) => ({
         category: c.category,
         count: c._count.id,
       })),
-      severityBreakdown: severityBreakdown.map((s) => ({
+      severityBreakdown: severityBreakdown.map((s: SeverityGroup) => ({
         severity: s.severity,
         count: s._count.id,
       })),
