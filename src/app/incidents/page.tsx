@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import {
@@ -51,7 +51,7 @@ interface Pagination {
   totalPages: number
 }
 
-export default function IncidentsPage() {
+function IncidentsContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -369,5 +369,17 @@ export default function IncidentsPage() {
         )}
       </Card>
     </div>
+  )
+}
+
+export default function IncidentsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal"></div>
+      </div>
+    }>
+      <IncidentsContent />
+    </Suspense>
   )
 }
