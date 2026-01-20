@@ -27,7 +27,7 @@ type ExportIncident = {
   businessImpact: string | null
   dataSubjectsAffected: number | null
   financialImpact: number | null
-  regulatoryNotificationRequired: boolean
+  regulatoryNotificationRequired: boolean | null
   regulatoryNotificationDate: Date | null
   tags: string[]
 }
