@@ -6,12 +6,6 @@ type ToolGroup = {
   _count: { id: number }
 }
 
-type ToolIncident = {
-  severity: string
-  category: string
-  reportedAt: Date
-}
-
 type ToolTrendIncident = {
   affectedTool: string
   reportedAt: Date
@@ -70,13 +64,13 @@ export async function GET(request: NextRequest) {
 
         const categoryBreakdown: Record<string, number> = {}
 
-        incidents.forEach((incident: ToolIncident) => {
+        incidents.forEach((incident) => {
           severityBreakdown[incident.severity]++
           categoryBreakdown[incident.category] = (categoryBreakdown[incident.category] || 0) + 1
         })
 
         const lastIncident = incidents.length > 0
-          ? incidents.reduce((latest: ToolIncident, current: ToolIncident) =>
+          ? incidents.reduce((latest, current) =>
               new Date(current.reportedAt) > new Date(latest.reportedAt) ? current : latest
             ).reportedAt
           : null
