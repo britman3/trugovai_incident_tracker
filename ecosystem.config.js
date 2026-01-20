@@ -4,10 +4,10 @@ module.exports = {
       name: 'trugovai-incident-tracker',
       script: 'npm',
       args: 'start',
-      cwd: '/home/user/trugovai_incident_tracker',
+      cwd: '/root/trugovai_incident_tracker',
       env: {
         NODE_ENV: 'production',
-        PORT: 3080,
+        PORT: 80,
       },
       instances: 1,
       autorestart: true,
