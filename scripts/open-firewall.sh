@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Open firewall port 80 for TruGovAI Incident Tracker
+# Open firewall port 3080 for TruGovAI Incident Tracker
 
-PORT=80
+PORT=3080
 
 echo "Opening firewall port $PORT..."
 

@@ -7,7 +7,7 @@ module.exports = {
       cwd: '/root/trugovai_incident_tracker',
       env: {
         NODE_ENV: 'production',
-        PORT: 80,
+        PORT: 3080,
       },
       instances: 1,
       autorestart: true,
