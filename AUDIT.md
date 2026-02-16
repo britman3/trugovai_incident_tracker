@@ -11,7 +11,25 @@
 
 ---
 
-## 1. Tech Stack
+## 1. Branch Info
+
+### All branches found
+
+| Branch | Location | Files |
+|--------|----------|-------|
+| `master` | local | `README.md`, `spec.md` |
+| `origin/main` | remote | `README.md`, `spec.md` |
+| `claude/create-audit-docs-5SFfd` | local + remote | `README.md`, `spec.md`, `AUDIT.md` |
+
+### Which branch contains the code?
+
+**None.** No branch contains application code. All branches hold only documentation files (`README.md` and `spec.md`). There is no `src/` directory, no `package.json`, no `prisma/` folder, and no implementation code anywhere in the repository.
+
+Total commits across all branches: **3** (Initial commit, spec upload, this audit).
+
+---
+
+## 2. Tech Stack
 
 ### Current state
 
@@ -34,7 +52,7 @@ No `package.json` exists. No dependencies are installed. No framework has been i
 
 ---
 
-## 2. Database Schema
+## 3. Database Schema
 
 ### Current state
 
@@ -166,7 +184,7 @@ DATABASE_URL="postgresql://<USER>:<PASSWORD>@<HOST>:<PORT>/<DATABASE>?schema=pub
 
 ---
 
-## 3. All Pages & Screens
+## 4. All Pages & Screens
 
 ### Current state
 
@@ -223,7 +241,7 @@ No `src/app/`, `src/pages/`, or any source directory exists.
 
 ---
 
-## 4. All Components
+## 5. All Components
 
 ### Current state
 
@@ -255,7 +273,7 @@ The spec does not list individual component filenames. Based on the screen defin
 
 ---
 
-## 5. Business Logic
+## 6. Business Logic
 
 ### Current state
 
@@ -344,7 +362,7 @@ Libraries: SendGrid or Resend for email, Slack incoming webhook for Slack.
 
 ---
 
-## 6. Auth & Multi-tenancy
+## 7. Auth & Multi-tenancy
 
 ### Current state
 
@@ -359,7 +377,7 @@ No authentication code exists.
 
 ---
 
-## 7. Config
+## 8. Config
 
 ### Current state
 
@@ -387,7 +405,7 @@ None exists.
 
 ---
 
-## 8. Lines of Code
+## 9. Lines of Code
 
 ```
 $ find src -name "*.tsx" -o -name "*.ts" | xargs wc -l | tail -1
@@ -405,7 +423,7 @@ The repository contains only:
 
 ---
 
-## 9. UI Patterns
+## 10. UI Patterns
 
 ### Current state
 
